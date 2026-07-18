@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="eyebrow">Système de sondage</div>
+      <h1>Créez des sondages. <em>Récoltez</em> des réponses. Comprenez vraiment.</h1>
+      <p class="lead">Concevez un sondage avec des questions conditionnelles en quelques minutes, partagez un lien unique, et suivez les résultats en direct — tableaux, graphiques et export CSV inclus.</p>
+      <div class="hero-ctas">
+        <a href="{% url 'accounts:register' %}" class="btn btn-primary">Créer mon premier sondage</a>
+        <a href="{% url 'accounts:login' %}" class="btn btn-outline" style="border-color:rgba(255,255,255,0.4); color:#fff;">J'ai déjà un compte</a>
+      </div>
+    </div>
+    <div class="tally-panel">
+      <div class="tally-title">DÉPOUILLEMENT EN DIRECT — « Quel outil préférez-vous ? »</div>
+      <div class="tally-row">
+        <div class="tally-label">Formulaires classiques</div>
+        <div class="tally-bar-track"><div class="tally-bar-fill" style="--pct:24%; animation-delay:.05s"></div></div>
+        <div class="tally-pct">24%</div>
+      </div>
+      <div class="tally-row">
+        <div class="tally-label">Feuilles de calcul</div>
+        <div class="tally-bar-track"><div class="tally-bar-fill" style="--pct:18%; animation-delay:.15s"></div></div>
+        <div class="tally-pct">18%</div>
+      </div>
+      <div class="tally-row">
+        <div class="tally-label">Scrutin</div>
+        <div class="tally-bar-track"><div class="tally-bar-fill" style="--pct:58%; animation-delay:.25s"></div></div>
+        <div class="tally-pct">58%</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">Tout ce qu'il faut, rien de superflu</h2>
+    <p class="section-sub">Pensé pour créer un sondage complet — de la première question à l'analyse des résultats — sans jongler entre plusieurs outils.</p>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">Q1</div>
+        <h3>Questions conditionnelles</h3>
+        <p>Affichez une question uniquement si une réponse précédente le justifie — sans écrire une ligne de code.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">↗</div>
+        <h3>Lien de partage unique</h3>
+        <p>Chaque sondage reçoit un lien dédié, diffusable par e-mail, réseaux sociaux ou QR code.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">%</div>
+        <h3>Résultats en direct</h3>
+        <p>Camemberts, histogrammes et réponses libres, agrégés automatiquement au fil des réponses reçues.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⧉</div>
+        <h3>Export CSV</h3>
+        <p>Téléchargez l'ensemble des réponses en un clic pour les analyser où vous le souhaitez.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⏱</div>
+        <h3>Expiration automatique</h3>
+        <p>Fixez une date de clôture : le sondage se ferme tout seul, sans intervention manuelle.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✓</div>
+        <h3>Connexion sécurisée</h3>
+        <p>Comptes protégés, verrouillage anti-force-brute, et connexion par identifiant ou e-mail.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{% if survey %}Modifier{% else %}Nouveau sondage{% endif %} — Scrutin{% endblock %}
+{% block content %}
+<div class="container section" style="padding-top:2.5rem; max-width: 820px;">
+  <h1 class="section-title">{% if survey %}Modifier « {{ survey.title }} »{% else %}Créer un sondage{% endif %}</h1>
+  <p class="section-sub">Définissez vos informations générales, puis ajoutez vos questions. Vous pouvez rendre une question visible uniquement selon la réponse donnée à une question précédente.</p>
+
+  {% if survey %}
+  <div class="msg msg-info mt-1" style="margin-bottom:1.5rem;">
+    Modifier les questions supprime les réponses déjà associées à ces questions. Les réponses restent visibles pour les questions inchangées uniquement si vous ne modifiez pas leur structure.
+  </div>
+  {% endif %}
+
+  <form method="post" id="survey-form">
+    {% csrf_token %}
+
+    <div class="ballot-card mt-2" style="margin-bottom:1.6rem;">
+      <div class="form-group">
+        <label for="{{ meta_form.title.id_for_label }}">Titre du sondage</label>
+        {{ meta_form.title }}
+        {% if meta_form.title.errors %}<div class="form-error">{{ meta_form.title.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="form-group">
+        <label for="{{ meta_form.description.id_for_label }}">Description</label>
+        {{ meta_form.description }}
+      </div>
+      <div class="two-col">
+        <div class="form-group">
+          <label for="{{ meta_form.expires_at.id_for_label }}">{{ meta_form.fields.expires_at.label }}</label>
+          {{ meta_form.expires_at }}
+        </div>
+        <div class="form-group">
+          <label>&nbsp;</label>
+          <label class="form-check" style="margin-top:.6rem;">
+            {{ meta_form.allow_anonymous }} <span style="font-weight:500;font-size:.9rem;">{{ meta_form.fields.allow_anonymous.label }}</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <h2 style="font-size:1.15rem;margin-bottom:1rem;">Questions</h2>
+    <div class="builder-grid" id="questions-container"></div>
+
+    <button type="button" class="add-question-btn btn-block mt-2" id="add-question-btn">+ Ajouter une question</button>
+
+    <div class="flex gap-1 mt-3">
+      <button type="submit" class="btn btn-primary">{% if survey %}Enregistrer les modifications{% else %}Créer le sondage{% endif %}</button>
+      <a href="{% url 'surveys:dashboard' %}" class="btn btn-ghost">Annuler</a>
+    </div>
+  </form>
+</div>
+
+<template id="question-template">
+  <div class="question-block" data-block>
+    <div class="question-block-head">
+      <span class="question-index" data-index-label>Question 1</span>
+      <button type="button" class="remove-question" data-remove>Supprimer</button>
+    </div>
+    <div class="form-group">
+      <label>Intitulé de la question</label>
+      <input type="text" name="q_text" class="form-control" placeholder="Ex: Recommanderiez-vous notre service ?" data-text required>
+    </div>
+    <div class="two-col">
+      <div class="form-group">
+        <label>Type de réponse</label>
+        <select name="q_type" class="form-control" data-type>
+          <option value="single">Choix unique</option>
+          <option value="multiple">Choix multiple</option>
+          <option value="text">Texte libre</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>&nbsp;</label>
+        <label class="form-check" style="margin-top:.6rem;">
+          <input type="checkbox" class="form-check-input" data-required-checkbox checked>
+          <span style="font-weight:500;font-size:.9rem;">Question obligatoire</span>
+        </label>
+        <input type="hidden" name="q_required" value="1" data-required-hidden>
+      </div>
+    </div>
+    <div class="form-group" data-choices-group>
+      <label>Choix de réponse (un par ligne)</label>
+      <textarea name="q_choices" class="form-control" rows="3" placeholder="Oui&#10;Non&#10;Je ne sais pas" data-choices></textarea>
+    </div>
+
+    <label class="form-check" style="margin-bottom:.6rem;">
+      <input type="checkbox" class="form-check-input" data-condition-toggle>
+      <span style="font-weight:500;font-size:.88rem;">Afficher cette question uniquement sous condition</span>
+    </label>
+    <div class="condition-box" data-condition-box style="display:none;">
+      <div class="form-help">Cette question n'apparaîtra que si la réponse ci-dessous a été donnée :</div>
+      <div class="two-col">
+        <select class="form-control" data-condition-question>
+          <option value="">— choisir une question —</option>
+        </select>
+        <select class="form-control" data-condition-choice>
+          <option value="">— choisir une réponse —</option>
+        </select>
+      </div>
+      <input type="hidden" name="q_condition_index" data-condition-index-hidden>
+      <input type="hidden" name="q_condition_choice_text" data-condition-choice-hidden>
+    </div>
+  </div>
+</template>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  window.SURVEY_PREFILL = {{ prefill_json|safe }};
+</script>
+<script src="{% static 'js/survey_builder.js' %}"></script>
+{% endblock %}

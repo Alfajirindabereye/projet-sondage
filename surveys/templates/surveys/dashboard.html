@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Mes sondages — Scrutin{% endblock %}
+{% block content %}
+<div class="container section" style="padding-top:2.5rem;">
+  <div class="page-head">
+    <div>
+      <h1 class="section-title mb-0">Mes sondages</h1>
+      <p class="text-muted mb-0">{{ surveys.count }} sondage{{ surveys.count|pluralize }} au total</p>
+    </div>
+    <a href="{% url 'surveys:create' %}" class="btn btn-primary">+ Nouveau sondage</a>
+  </div>
+
+  {% if surveys %}
+    <div class="stat-row">
+      <div class="stat-box"><div class="num">{{ surveys.count }}</div><div class="lbl">Sondages créés</div></div>
+      <div class="stat-box"><div class="num">{{ active_count }}</div><div class="lbl">Actifs</div></div>
+      <div class="stat-box"><div class="num">{{ total_responses }}</div><div class="lbl">Réponses reçues</div></div>
+      <div class="stat-box"><div class="num">{{ closed_count }}</div><div class="lbl">Clos</div></div>
+    </div>
+
+    <div class="survey-list">
+      {% for survey in surveys %}
+      <div class="survey-row">
+        <div>
+          <h3>{{ survey.title }}</h3>
+          <div class="survey-meta">
+            <span class="badge {% if survey.is_active %}badge-active{% else %}badge-closed{% endif %}">{{ survey.status_label }}</span>
+            <span class="mono">{{ survey.response_count }} réponse{{ survey.response_count|pluralize }}</span>
+            <span>Créé le {{ survey.created_at|date:"d/m/Y" }}</span>
+            {% if survey.expires_at %}<span>Expire le {{ survey.expires_at|date:"d/m/Y H:i" }}</span>{% endif %}
+          </div>
+        </div>
+        <div class="row-actions">
+          <a href="{% url 'surveys:results' survey.pk %}" class="btn btn-outline btn-sm">Résultats</a>
+          <a href="{% url 'surveys:edit' survey.pk %}" class="btn btn-ghost btn-sm">Modifier</a>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="copyLink('{{ request.scheme }}://{{ request.get_host }}{{ survey.get_absolute_url }}', this)">Copier le lien</button>
+          <form method="post" action="{% url 'surveys:toggle_close' survey.pk %}" style="display:inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-ghost btn-sm">{% if survey.is_closed %}Réactiver{% else %}Clôturer{% endif %}</button>
+          </form>
+          <form method="post" action="{% url 'surveys:delete' survey.pk %}" style="display:inline" onsubmit="return confirm('Supprimer définitivement « {{ survey.title }} » et toutes ses réponses ?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state card">
+      <div class="glyph">☐</div>
+      <h3>Aucun sondage pour l'instant</h3>
+      <p>Créez votre premier sondage pour commencer à récolter des réponses.</p>
+      <a href="{% url 'surveys:create' %}" class="btn btn-primary mt-2">Créer un sondage</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function copyLink(url, btn){
+  navigator.clipboard.writeText(url).then(function(){
+    var original = btn.textContent;
+    btn.textContent = 'Copié !';
+    setTimeout(function(){ btn.textContent = original; }, 1500);
+  });
+}
+</script>
+{% endblock %}

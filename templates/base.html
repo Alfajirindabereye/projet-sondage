@@ -1,0 +1,57 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Scrutin — Créez des sondages qui comptent{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="{% url 'surveys:home' %}" class="brand"><span class="brand-mark"></span> Scrutin</a>
+      {% if user.is_authenticated %}
+      <div class="nav-user">
+        <span class="nav-username">@{{ user.username }}</span>
+        <a href="{% url 'surveys:dashboard' %}" class="btn btn-ghost btn-sm">Mes sondages</a>
+        <form method="post" action="{% url 'accounts:logout' %}" style="display:inline">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline btn-sm">Déconnexion</button>
+        </form>
+      </div>
+      {% else %}
+      <div class="nav-user">
+        <a href="{% url 'accounts:login' %}" class="btn btn-ghost btn-sm">Connexion</a>
+        <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-sm">Créer un compte</a>
+      </div>
+      {% endif %}
+    </div>
+  </nav>
+
+  {% if messages %}
+  <div class="messages">
+    {% for message in messages %}
+      <div class="msg msg-{{ message.tags|default:'info' }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>Scrutin — système de sondage <span class="mono">v1.0</span></span>
+      <span>Construit avec Django</span>
+    </div>
+  </footer>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Résultats — {{ survey.title }} — Scrutin{% endblock %}
+{% block content %}
+<div class="container section" style="padding-top:2.5rem; max-width: 820px;">
+  <div class="page-head">
+    <div>
+      <h1 class="section-title mb-0">{{ survey.title }}</h1>
+      <p class="text-muted mb-0">{{ survey.response_count }} réponse{{ survey.response_count|pluralize }} reçue{{ survey.response_count|pluralize }}</p>
+    </div>
+    <div class="row-actions">
+      <a href="{% url 'surveys:export_csv' survey.pk %}" class="btn btn-outline btn-sm">Exporter en CSV</a>
+      <a href="{% url 'surveys:edit' survey.pk %}" class="btn btn-ghost btn-sm">Modifier</a>
+      <a href="{% url 'surveys:dashboard' %}" class="btn btn-ghost btn-sm">← Mes sondages</a>
+    </div>
+  </div>
+
+  <div class="ballot-card mt-1" style="margin-bottom:2rem;">
+    <div class="form-help" style="margin-bottom:.4rem;">Lien de partage</div>
+    <div class="share-link-box">
+      <input type="text" readonly value="{{ request.scheme }}://{{ request.get_host }}{{ survey.get_absolute_url }}" id="share-url">
+      <button type="button" class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('share-url').value)">Copier</button>
+    </div>
+  </div>
+
+  {% if survey.response_count == 0 %}
+    <div class="empty-state card">
+      <div class="glyph">◌</div>
+      <h3>Pas encore de réponse</h3>
+      <p>Partagez le lien ci-dessus pour commencer à récolter des réponses.</p>
+    </div>
+  {% else %}
+    {% for chart in charts %}
+    <div class="card card-pad result-card">
+      <div class="result-head">
+        <h3>{{ chart.question.text }}</h3>
+        <span class="result-total mono">{{ chart.total }} réponse{{ chart.total|pluralize }}</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="chart-{{ chart.question.id }}" height="220"></canvas>
+      </div>
+    </div>
+    {% endfor %}
+
+    {% for block in text_blocks %}
+    <div class="card card-pad result-card">
+      <div class="result-head">
+        <h3>{{ block.question.text }}</h3>
+        <span class="result-total mono">{{ block.answers|length }} réponse{{ block.answers|length|pluralize }}</span>
+      </div>
+      {% if block.answers %}
+        {% for a in block.answers %}
+        <div class="text-answer-item">
+          <div>{{ a.text_answer }}</div>
+          <div class="text-answer-date">{{ a.response.submitted_at|date:"d/m/Y H:i" }}</div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted mb-0">Aucune réponse pour cette question.</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script>
+var PALETTE = ['#E8542B', '#14213D', '#2E8B7C', '#D9A441', '#5C6B85', '#C43F1C', '#8A97B0', '#7FBEB2'];
+{% for chart in charts %}
+new Chart(document.getElementById('chart-{{ chart.question.id }}'), {
+  type: '{{ chart.chart_type }}',
+  data: {
+    labels: {{ chart.labels_json|safe }},
+    datasets: [{
+      data: {{ chart.counts_json|safe }},
+      backgroundColor: PALETTE,
+      borderWidth: 0,
+      borderRadius: {% if chart.chart_type == 'bar' %}4{% else %}0{% endif %}
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: {% if chart.chart_type == "bar" %}false{% else %}true{% endif %}, position: 'bottom', labels: { font: { family: 'Inter' } } } },
+    scales: {% if chart.chart_type == 'bar' %}{ y: { beginAtZero: true, ticks: { precision: 0 } } }{% else %}{}{% endif %}
+  }
+});
+{% endfor %}
+</script>
+{% endblock %}

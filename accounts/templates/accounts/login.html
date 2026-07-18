@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Connexion — Scrutin{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="card card-pad">
+      <div class="auth-head">
+        <div class="brand-mark"></div>
+        <h1>Content de vous revoir</h1>
+        <p>Connectez-vous pour gérer vos sondages</p>
+      </div>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+        <div class="form-group">
+          <label for="{{ form.username.id_for_label }}">Nom d'utilisateur ou e-mail</label>
+          {{ form.username }}
+          {% if form.username.errors %}<div class="form-error">{{ form.username.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.password.id_for_label }}">Mot de passe</label>
+          <div class="password-field">
+            {{ form.password }}
+            <button type="button" class="password-toggle" data-toggle-for="{{ form.password.id_for_label }}">Afficher</button>
+          </div>
+          {% if form.password.errors %}<div class="form-error">{{ form.password.errors.0 }}</div>{% endif %}
+        </div>
+
+        {% if form.non_field_errors %}
+          <div class="form-error mt-1">{{ form.non_field_errors.0 }}</div>
+        {% endif %}
+
+        <div class="flex justify-between items-center mt-2" style="margin-bottom:1.3rem;">
+          <label class="form-check" style="margin-bottom:0;">
+            {{ form.remember_me }} <span style="font-weight:500;font-size:.88rem;">Se souvenir de moi</span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
+      </form>
+
+      <div class="auth-switch">
+        Pas encore de compte ? <a href="{% url 'accounts:register' %}">Créer un compte</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.password-toggle').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var input = document.getElementById(btn.dataset.toggleFor);
+    if (!input) return;
+    var showing = input.type === 'text';
+    input.type = showing ? 'password' : 'text';
+    btn.textContent = showing ? 'Afficher' : 'Masquer';
+  });
+});
+</script>
+{% endblock %}

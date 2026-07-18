@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{{ survey.title }} — Scrutin{% endblock %}
+{% block content %}
+<div class="container section" style="padding-top:2.5rem; max-width: 680px;">
+  <div class="survey-header">
+    <h1>{{ survey.title }}</h1>
+    {% if survey.description %}<p>{{ survey.description }}</p>{% endif %}
+  </div>
+
+  <form method="post" id="fill-form">
+    {% csrf_token %}
+    {% for q in questions %}
+    <div class="card ballot-card q-card"
+         data-qid="{{ q.id }}"
+         {% if q.condition_question_id %}data-condition-qid="{{ q.condition_question_id }}" data-condition-choice-id="{{ q.condition_choice_id }}"{% endif %}>
+      <div class="q-text">{{ q.text }}{% if q.required %}<span class="q-required-mark">*</span>{% endif %}</div>
+
+      {% if q.question_type == 'text' %}
+        <textarea name="answer_{{ q.id }}" class="form-control" rows="3" placeholder="Votre réponse…"></textarea>
+      {% elif q.question_type == 'single' %}
+        {% for c in q.choices.all %}
+        <label class="option-row">
+          <input type="radio" name="answer_{{ q.id }}" value="{{ c.id }}">
+          <span>{{ c.text }}</span>
+        </label>
+        {% endfor %}
+      {% else %}
+        {% for c in q.choices.all %}
+        <label class="option-row">
+          <input type="checkbox" name="answer_{{ q.id }}" value="{{ c.id }}">
+          <span>{{ c.text }}</span>
+        </label>
+        {% endfor %}
+      {% endif %}
+    </div>
+    {% endfor %}
+
+    <button type="submit" class="btn btn-primary btn-block mt-2">Envoyer mes réponses</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.q-card'));
+
+  function isChecked(qid, choiceId) {
+    var inputs = document.querySelectorAll('input[name="answer_' + qid + '"]');
+    for (var i = 0; i < inputs.length; i++) {
+      if (inputs[i].checked && inputs[i].value === String(choiceId)) return true;
+    }
+    return false;
+  }
+
+  function updateVisibility() {
+    cards.forEach(function (card) {
+      var condQid = card.dataset.conditionQid;
+      if (!condQid) return;
+      var condChoiceId = card.dataset.conditionChoiceId;
+      var visible = isChecked(condQid, condChoiceId);
+      card.classList.toggle('hidden-q', !visible);
+      var fields = card.querySelectorAll('input, textarea');
+      fields.forEach(function (f) { f.disabled = !visible; });
+    });
+  }
+
+  document.getElementById('fill-form').addEventListener('change', updateVisibility);
+  updateVisibility();
+})();
+</script>
+{% endblock %}
